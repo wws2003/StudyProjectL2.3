@@ -1,0 +1,35 @@
+Java Server Faces technology offers the concept of composite components with
+Facelets. A composite component is a special type of template that acts as a
+component.
+Any component is essentially a piece of reusable code that behaves in a particular way.
+For example, an input component accepts user input. A component can also have
+validators, converters, and listeners attached to it to perform certain defined actions.
+A composite component consists of a collection of markup tags and other existing
+components. This reusable, user-created component has a customized, defined 
+Composite Components
+Introduction to Facelets 8-11
+functionality and can have validators, converters, and listeners attached to it like any
+other component.
+With Facelets, any XHTML page that contains markup tags and other components can
+be converted into a composite component. Using the resources facility, the composite
+component can be stored in a library that is available to the application from the
+defined resources location.
+Table 8–3 lists the most commonly used composite tags and their functions.
+For more information and a complete list of Facelets composite tags, see the JavaServer
+Faces Facelets Tag Library documentation.
+The following example shows a composite component that accepts an email address as
+input:
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+ xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+ xmlns:h="http://xmlns.jcp.org/jsf/html">
+ <h:head>
+ <title>This content will not be displayed</title>
+ </h:head>
+ <h:body>
+Table 8–3 Composite Component Tags
+Tag Function
+composite:interface Declares the usage contract for a composite component.
+The composite component can be used as a single
+component whose feature set is the unit

@@ -1,0 +1,35 @@
+Interview In The... | Main | TomEE Maven Alien--S... »
+@INJECT VS. @EJB
+
+You can use both annotations to inject EJBs. Start with @Inject and if you encounter any problems, switch to @EJB.
+
+@Inject does not have any methods / attributes--it is just a plain annotation:
+
+
+@Target(value = {ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
+@Retention(value = RetentionPolicy.RUNTIME)
+@Documented
+public @interface Inject {
+}
+
+On the other hand, the @EJB annotation allows you to pass additional information, which could be useful to reference remote EJBs, or EJBs which cannot be simple injected in the "Convention over Configuration" style:
+
+
+@Target(value = {ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface EJB {
+
+    public String name() default "";
+
+    public String beanName() default "";
+
+    public Class beanInterface() default Object.class;
+
+    public String mappedName() default "";
+}
+
+Sometimes (e.g. for exposure of as JMX managed bean) it may be necessary to use a "self" reference to an EJB. You could inject a reference to "self" with @EJB, but not @Inject.
+
+See also an in-depth discussion in the "Real World Java EE Patterns--Rethinking Best Practices" book (Second Iteration, "Green Book"), page 411 in, chapter "Self-Invoking Beans"
+
+

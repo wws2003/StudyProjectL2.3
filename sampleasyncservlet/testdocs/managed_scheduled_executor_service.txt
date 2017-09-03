@@ -1,0 +1,41 @@
+public interface ManagedScheduledExecutorService
+extends ManagedExecutorService, ScheduledExecutorService
+A manageable version of a ScheduledExecutorService.
+A ManagedScheduledExecutorService extends the Java™ SE ScheduledExecutorService to provide methods for submitting delayed or periodic tasks for execution in a Java™ EE environment. Implementations of the ManagedScheduledExecutorService are provided by a Java™ EE Product Provider. Application Component Providers use the Java Naming and Directory Interface™ (JNDI) to look-up instances of one or more ManagedScheduledExecutorService objects using resource environment references. ManagedScheduledExecutorService instances can also be injected into application components through the use of the Resource annotation.
+
+The Concurrency Utilities for Java™ EE specification describes several behaviors that a ManagedScheduledExecutorService can implement. The Application Component Provider and Deployer identify these requirements and map the resource environment reference appropriately.
+
+Tasks are run in managed threads provided by the Java™ EE Product Provider and are run within the application component context that submitted the task. All tasks run without an explicit transaction (they do not enlist in the application component's transaction). If a transaction is required, use a javax.transaction.UserTransaction instance. A UserTransaction instance is available in JNDI using the name: "java:comp/UserTransaction" or by requesting an injection of a UserTransaction object using the Resource annotation.
+
+Example:
+
+
+ public run() {
+   // Begin of task
+   InitialContext ctx = new InitialContext();
+   UserTransaction ut = (UserTransaction) ctx.lookup("java:comp/UserTransaction");
+   ut.begin();
+
+   // Perform transactional business logic
+
+   ut.commit();
+ }
+ 
+Tasks can optionally provide an ManagedTaskListener to receive notifications of lifecycle events, through the use of ManagedTask interface.
+Asynchronous tasks are typically submitted to the ManagedScheduledExecutorService using one of the submit or schedulemethods, each of which return a Future instance. The Future represents the result of the task and can also be used to check if the task is complete or wait for its completion.
+
+If the task is cancelled, the result for the task is a CancellationException exception. If the task is unable to run due to start due to a reason other than cancellation, the result is a AbortedException exception. If the task is scheduled with a Trigger and the Trigger forces the task to be skipped, the result will be a SkippedException exception.
+
+Tasks can be scheduled to run periodically using the schedule methods that take a Trigger as an argument and the scheduleAtFixedRate and scheduleWithFixedDelay methods. The result of the Future will be represented by the currently scheduled or running instance of the task. Future and past executions of the task are not represented by the Future. The state of the Future will therefore change and multiple results are expected.
+
+For example, if a task is repeating, the lifecycle of the task would be:
+(Note: See ManagedTaskListener for task lifecycle management details.)
+
+Sequence	State	Action	Listener	Next state
+1A.	None	submit()	taskSubmitted	Submitted
+2A.	Submitted	About to call run()	taskStarting	Started
+3A.	Started	Exit run()	taskDone	Reschedule
+1B.	Reschedule		taskSubmitted	Submitted
+2B.	Submitted	About to call run()	taskStarting	Started
+3B.	Started	Exit run()	taskDone	Reschedule
+
