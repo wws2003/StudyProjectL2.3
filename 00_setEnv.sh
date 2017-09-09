@@ -6,6 +6,6 @@ export usr_glassfish_deployed_apps_home=glassfish-deployed-apps
 # Webapp group ID
 export usr_webapp_group_id=hpg
 # Webapp artifact ID
-export usr_webapp_artifact_id=sampleasyncservlet3
+export usr_webapp_artifact_id=samplenonblockingioservlet
 # Webapp name
-export usr_webapp_name=sampleasyncservlet3
+export usr_webapp_name=samplenonblockingioservlet
