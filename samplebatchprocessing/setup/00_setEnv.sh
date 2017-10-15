@@ -18,4 +18,10 @@ export usr_glassfish_home_prefix=$HOME/servers
 # Glassfish bin folder
 export usr_glassfish_bin_path=$usr_glassfish_home_prefix/glassfish4/bin
 
+# Glassfish connection pool name
+export glf_connection_pool_name=glf_hrsample_connection_pool
+export glf_data_source=glf_hrsample_connection_datasource
+#---XA datasource is reserved
+export glf_data_xasource=glf_hrsample_connection_xadatasource
+
 
