@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package hpg.model.entity;
 
 import java.io.Serializable;
@@ -23,6 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Created on Oct 16, 2017
+ *
  * @author Y@techburg
  */
 @Entity
