@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="newHireJob" restartable="true" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+     version="1.0">
+
+    <!-- TODO Make use of properties -->
+    <properties>
+        <property name="error_log_file" value="err.log"/>
+    </properties>
+
+    <!-- The only step -->
+    <step id="firstStep" >
+        <!-- Chunk step with standard process flow -->
+        <chunk item-count="3">
+            <reader ref="newHireItemReader"/>
+            <processor ref="newHireItemProcessor"/>
+            <writer ref="newHireItemWriter"/>
+        </chunk>
+    </step>
+</job>

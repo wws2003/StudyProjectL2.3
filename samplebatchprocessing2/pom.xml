@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>hpg</groupId>
+    <artifactId>samplebatchprocessing2</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>samplebatchprocessing2</name>
+
+    <!-- Unix profile -->
+    <profiles>
+        <profile>
+            <id>unix</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <properties>
+                <glassfish.home.prefix>${user.home}/servers</glassfish.home.prefix>
+                <glassfish.deployed-apps.home>glassfish-deployed-apps1</glassfish.deployed-apps.home>
+            </properties>
+        </profile>
+    </profiles>
+
+    <!-- Properties -->
+    <properties>
+        <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javaee.api.version>7.0</javaee.api.version>
+        <cargo.plugin.version>1.4.4</cargo.plugin.version>
+        <glassfish.domain.name>domain1</glassfish.domain.name>
+        <glassfish.home>${glassfish.home.prefix}/glassfish4</glassfish.home>
+        <integration.container.id>glassfish4x</integration.container.id>
+    </properties>
+
+    <!-- Dependencies -->
+    <dependencies>
+        <!-- JAVAEE7 -->
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>${javaee.api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- JPA -->
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.1-api</artifactId>
+            <version>1.0.0.Final</version>
+        </dependency>
+
+        <!-- hibernate -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>4.3.1.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>4.3.1.Final</version>
+        </dependency>
+
+        <!-- Postgres and JDBC -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.3-1102-jdbc41</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- Deploy target (currently set to static local directory) -->
+    <distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>hpgrepo</id>
+            <name>HPG Repository</name>
+            <url>file://${glassfish.home.prefix}/${glassfish.deployed-apps.home}/release</url>
+            <layout>default</layout>
+        </repository>
+        <snapshotRepository>
+            <uniqueVersion>true</uniqueVersion>
+            <id>hpgrepo-snapshot</id>
+            <name>HPG Repository</name>
+            <url>file://${glassfish.home.prefix}/${glassfish.deployed-apps.home}/snapshot</url>
+            <layout>default</layout>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <!-- Build -->
+    <build>
+        <!-- Webapp name -->
+        <finalName>${project.artifactId}</finalName>
+        <!-- Plug-ins -->
+        <plugins>
+            <!-- Compiler plug-in -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <compilerArguments>
+                        <endorseddirs>${endorsed.dir}</endorseddirs>
+                    </compilerArguments>
+                </configuration>
+            </plugin>
+            <!-- War-archiving plug-in -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+            <!-- Copy plug-in -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${endorsed.dir}</outputDirectory>
+                            <silent>true</silent>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>javax</groupId>
+                                    <artifactId>javaee-endorsed-api</artifactId>
+                                    <version>7.0</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Copy dependencies to WEB-INF/lib folder-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.8</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${basedir}/target/${project.artifactId}/WEB-INF/lib
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Cargo plug-in (for Glassfish web container) -->
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <inherited>true</inherited>
+                <!-- Executions -->
+                <executions>
+                    <!-- Re-deploy into Glassfish domain in the phase of integration-test-->
+                    <execution>
+                        <id>deploy</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>redeploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <!-- Configurations -->
+                <configuration>
+                    <container>
+                        <containerId>${integration.container.id}</containerId>
+                        <type>installed</type>
+                        <home>${glassfish.home}</home>
+                    </container>
+                    <configuration>
+                        <type>existing</type>
+                        <home>${glassfish.home}/glassfish/domains</home>
+                        <properties>
+                            <cargo.glassfish.domain.name>${glassfish.domain.name}</cargo.glassfish.domain.name>
+                            <!--cargo.remote.username></cargo.remote.username-->
+                            <cargo.remote.password />
+                        </properties>
+                    </configuration>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
