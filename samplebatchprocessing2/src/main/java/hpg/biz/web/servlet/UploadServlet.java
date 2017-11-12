@@ -16,6 +16,7 @@ import javax.servlet.AsyncListener;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,9 +28,18 @@ import javax.servlet.http.HttpServletResponse;
  * @author Y@techburg
  */
 @WebServlet(name = "UploadServlet", urlPatterns = {"/uploadServlet"}, asyncSupported = true)
+@MultipartConfig
 public class UploadServlet extends HttpServlet {
 
-    private static final String BATCH_JOB_START_URL = "/BatchServlet";
+    /**
+     * Name of upload file element
+     */
+    private static final String UPLOAD_FILE_NAME = "fileToUpload";
+
+    /**
+     * Path of batch job start servlet
+     */
+    private static final String BATCH_JOB_START_URL = "/BatchJobStartServlet";
 
     @Inject
     private FileUploadSession fileUploadSession;
@@ -74,11 +84,11 @@ public class UploadServlet extends HttpServlet {
                 req,
                 resp);
 
-        // Set listener for servlet input stream
+        // Set listener for file input stream
         Queue uploadDataQueue = this.fileUploadSession.getUploadDataQueue();
         uploadDataQueue.clear();
         ServletInputStream servletInputStream = req.getInputStream();
-        ReadListener inputStreamReadListener = new FileUploadListenerImpl(servletInputStream, BATCH_JOB_START_URL, asyncContext, uploadDataQueue);
+        ReadListener inputStreamReadListener = new FileUploadListenerImpl(UPLOAD_FILE_NAME, BATCH_JOB_START_URL, asyncContext, uploadDataQueue);
         servletInputStream.setReadListener(inputStreamReadListener);
 
         // Return immediately

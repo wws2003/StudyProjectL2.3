@@ -20,7 +20,7 @@
             </activation>
             <properties>
                 <glassfish.home.prefix>${user.home}/servers</glassfish.home.prefix>
-                <glassfish.deployed-apps.home>glassfish-deployed-apps1</glassfish.deployed-apps.home>
+                <glassfish.deployed-apps.home>glassfish-deployed-apps</glassfish.deployed-apps.home>
             </properties>
         </profile>
     </profiles>

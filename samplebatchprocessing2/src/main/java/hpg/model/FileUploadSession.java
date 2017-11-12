@@ -31,6 +31,9 @@ public class FileUploadSession implements Serializable {
         return uploadDataQueue;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "FileUploadSession{" + "uploadDataQueue=" + uploadDataQueue + '}';

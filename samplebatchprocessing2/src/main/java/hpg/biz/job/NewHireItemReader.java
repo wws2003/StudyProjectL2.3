@@ -5,17 +5,18 @@
  */
 package hpg.biz.job;
 
-import hpg.model.FileUploadSession;
+import hpg.model.FileUploadStorage;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.batch.api.chunk.AbstractItemReader;
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -24,19 +25,27 @@ import javax.inject.Named;
  *
  * @author Y@techburg
  */
-@ApplicationScoped
+@Dependent
 @Named(value = "newHireItemReader")
 public class NewHireItemReader extends AbstractItemReader {
 
+    /**
+     * Bufferred reader for current file data
+     */
     private BufferedReader bufferedReader;
 
-    // Is this possible to access session scope from application scope ?
+    /**
+     * Application-scoped storage (queue-based) for upload file data
+     */
     @Inject
-    private FileUploadSession fileUploadSession;
+    private FileUploadStorage fileUploadStorage;
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
-        Queue uploadDataQueue = fileUploadSession.getUploadDataQueue();
+        //Experiment
+        BlockingQueue<Queue> uploadData = fileUploadStorage.getApplicationUploadFileQueue();
+        Queue uploadDataQueue = uploadData.take();
+
         StringBuilder sb = new StringBuilder();
         while (uploadDataQueue.peek() != null) {
             String data = (String) uploadDataQueue.poll();

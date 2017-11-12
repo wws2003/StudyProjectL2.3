@@ -5,15 +5,21 @@
  */
 package hpg.biz.web.servlet;
 
+import hpg.model.FileUploadSession;
+import hpg.model.FileUploadStorage;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Properties;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.JobStartException;
 import javax.batch.runtime.BatchRuntime;
+import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import javax.servlet.ServletException;
@@ -34,6 +40,18 @@ public class BatchJobServlet extends HttpServlet {
     private EntityManagerFactory emf;
 
     /**
+     * Uploaded data in session
+     */
+    @Inject
+    private FileUploadSession fileUploadSession;
+
+    /**
+     * Application-scoped uploaded data
+     */
+    @Inject
+    private FileUploadStorage fileUploadStorage;
+
+    /**
      * Handles the HTTP <code>GET</code> method.
      *
      * @param request servlet request
@@ -44,6 +62,7 @@ public class BatchJobServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        moveUploadFileFromSessionToStorage();
         processRequest(request, response);
     }
 
@@ -58,6 +77,7 @@ public class BatchJobServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        moveUploadFileFromSessionToStorage();
         processRequest(request, response);
     }
 
@@ -96,11 +116,30 @@ public class BatchJobServlet extends HttpServlet {
             long jid = jo.start("newHireJob", new Properties());
 
             out.println("Job submitted: " + jid + "<br>");
-            out.println("Job status after submitted: " + jo.getJobExecution(jid).getBatchStatus().name() + "<br>");
+            out.println("Job status after submitted: "
+                    + jo.getJobExecution(jid).getBatchStatus().name()
+                    + "<br>");
             out.println("<br><br>Check server.log for output, also look at \"newHireJob.xml\" for Job XML.");
             out.println("</body>");
             out.println("</html>");
         } catch (JobStartException | JobSecurityException ex) {
+            Logger.getLogger(BatchJobServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Move uploaded file data from session to application-scoped storage <br>
+     * in order to access from job item reader
+     */
+    private void moveUploadFileFromSessionToStorage() {
+        Queue uploadDataQueue = fileUploadSession.getUploadDataQueue();
+        Queue copiedUploadData = new LinkedBlockingDeque(uploadDataQueue);
+        uploadDataQueue.clear();
+        BlockingQueue<Queue> uploadFileQueue = fileUploadStorage.getApplicationUploadFileQueue();
+        try {
+            // Put upload file data queue into application-scoped data queue
+            uploadFileQueue.put(copiedUploadData);
+        } catch (InterruptedException ex) {
             Logger.getLogger(BatchJobServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
