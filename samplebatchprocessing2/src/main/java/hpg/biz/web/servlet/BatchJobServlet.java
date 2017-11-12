@@ -36,6 +36,11 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "BatchServlet", urlPatterns = {"/BatchServlet"})
 public class BatchJobServlet extends HttpServlet {
 
+    /**
+     * Servlet for job waiting
+     */
+    private static final String BATCH_JOB_WAIT_SERVLET = "/BatchJobWaitServlet";
+
     @PersistenceUnit
     private EntityManagerFactory emf;
 
@@ -52,12 +57,7 @@ public class BatchJobServlet extends HttpServlet {
     private FileUploadStorage fileUploadStorage;
 
     /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * {@inheritDoc}
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -67,12 +67,7 @@ public class BatchJobServlet extends HttpServlet {
     }
 
     /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * {@inheritDoc}
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -82,9 +77,7 @@ public class BatchJobServlet extends HttpServlet {
     }
 
     /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
+     * {@inheritDoc}
      */
     @Override
     public String getServletInfo() {
@@ -102,6 +95,7 @@ public class BatchJobServlet extends HttpServlet {
      */
     private void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String jobWatingPath = request.getContextPath() + BATCH_JOB_WAIT_SERVLET;
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             out.println("<html>");
@@ -114,12 +108,13 @@ public class BatchJobServlet extends HttpServlet {
             // Get job operator and submit the job specified by id
             JobOperator jo = BatchRuntime.getJobOperator();
             long jid = jo.start("newHireJob", new Properties());
-
+            jobWatingPath = jobWatingPath + "?jobId=" + jid;
             out.println("Job submitted: " + jid + "<br>");
             out.println("Job status after submitted: "
                     + jo.getJobExecution(jid).getBatchStatus().name()
                     + "<br>");
             out.println("<br><br>Check server.log for output, also look at \"newHireJob.xml\" for Job XML.");
+            out.println("<br><br>For impatient users who want to wait for the job to finish, click <a href=" + jobWatingPath + ">here</a>");
             out.println("</body>");
             out.println("</html>");
         } catch (JobStartException | JobSecurityException ex) {
